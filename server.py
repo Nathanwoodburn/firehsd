@@ -458,5 +458,14 @@ def not_found(e):
 
 
 # endregion
+@app.after_request
+def add_cors_headers(response):
+    # Allow CORS for all API endpoints
+    if request.path.startswith('/api/'):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000, host="127.0.0.1")
