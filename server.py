@@ -334,6 +334,7 @@ def api_namesummary(name):
     try:
         summary = {
             "name": name,
+            "height": None,
             "value": None,
             "blocksUntilExpire": None,
             "owner": None,
@@ -365,7 +366,7 @@ def api_namesummary(name):
             summary["error"] = "Name info not found"
             return jsonify(summary), 404
 
-
+        summary["height"] = name_info['info'].get('height', None)
         summary["hash"] = name_info['info'].get('nameHash', None)
         summary["state"] = name_info['info'].get('state', None)
 
