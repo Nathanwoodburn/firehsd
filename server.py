@@ -13,7 +13,7 @@ from flask import (
 import os
 import json
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 import dotenv
 
 dotenv.load_dotenv()
@@ -340,6 +340,8 @@ def api_namesummary(name):
         summary = {
             "name": name,
             "height": None,
+            "mintTimestamp": None,
+            "mintDate": None,
             "value": None,
             "blocksUntilExpire": None,
             "owner": None,
@@ -394,6 +396,17 @@ def api_namesummary(name):
                 if owner_response.status_code == 200:
                     owner_data = owner_response.json()
                     summary["owner"] = owner_data.get('address', None)
+
+        # If the height it set, get the mint time
+        response = requests.get(f"{HSD_URL()}/header/{summary['height']}")
+        if response.status_code == 200:
+            block_header = response.json()
+            print(json.dumps(block_header, indent=4))
+            if 'time' in block_header:
+                summary["mintTimestamp"] = block_header['time']
+                summary["mintDate"] = datetime.fromtimestamp(block_header['time'],tz=timezone.utc).isoformat()
+
+
 
         # Get resources
         data = {
@@ -469,7 +482,7 @@ def api_index(catch_all=None):
 
 # region Demo routes
 
-demo_data = {
+DEMO_URLS = {
     "status": "/api/v1/status",
     "chain": "/api/v1/chain",
     "mempool": "/api/v1/mempool",
@@ -489,7 +502,7 @@ demo_data = {
 
 @app.route("/demo/v1/<path:api_name>")
 def demo(api_name):
-    demo_url = demo_data.get(api_name, None)
+    demo_url = DEMO_URLS.get(api_name, None)
     if not demo_url:
         return render_template("404.html"), 404
     return render_template("demo.html", url=demo_url)
