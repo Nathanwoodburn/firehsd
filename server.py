@@ -18,6 +18,12 @@ import dotenv
 
 dotenv.load_dotenv()
 
+HSD_HOST = os.getenv("HSD_HOST", "127.0.0.1")
+HSD_PORT = os.getenv("HSD_PORT", "12037")
+HSD_API_KEY = os.getenv("HSD_API_KEY", "y5cSK42tgVCdt4E58jkHjI3nQ9GU32bC")
+
+
+
 app = Flask(__name__)
 
 
@@ -25,6 +31,15 @@ def find(name, path):
     for root, dirs, files in os.walk(path):
         if name in files:
             return os.path.join(root, name)
+        
+
+def HSD_URL():
+    """
+    Returns the HSD URL based on the environment variables.
+    """
+    if not HSD_API_KEY:
+        return f"http://{HSD_HOST}:{HSD_PORT}"
+    return f"http://x:{HSD_API_KEY}@{HSD_HOST}:{HSD_PORT}"
 
 # Assets routes
 @app.route("/assets/<path:path>")
@@ -106,25 +121,242 @@ def catch_all(path: str):
 
 # region API routes
 
-api_requests = 0
-
-@app.route("/api/v1/data", methods=["GET"])
-def api_data():
+@app.route("/api/v1/status")
+def api_status():
     """
-    Example API endpoint that returns some data.
-    You can modify this to return whatever data you need.
+    This endpoint checks the status of the HSD node.
     """
+    try:
+        response = requests.get(HSD_URL())
+        if response.status_code == 200:
+            return jsonify({"status": "HSD is running"}), 200
+        else:
+            return jsonify({"error": "HSD is not running"}), 503
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/api/v1/chain")
+def api_chain():
+    """
+    This endpoint returns the chain status of the HSD node.
+    """
+    try:
+        response = requests.get(HSD_URL())
+        if response.status_code == 200:
+            if 'chain' in response.json():
+                chain_status = response.json()['chain']
+                return jsonify({"chain": chain_status}), 200
+            else:
+                return jsonify({"error": "Chain status not found in response"}), 503
+        else:
+            return jsonify({"error": "Failed to get chain status"}), 503
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
 
-    global api_requests
-    api_requests += 1
+@app.route("/api/v1/mempool")
+def mempool():
+    """
+    This endpoint returns the current mempool status from the HSD node.
+    """
+    
+    try:
+        url = f"{HSD_URL()}/mempool"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify({"error": "Command failed", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
 
-    data = {
-        "header": "Sample API Response",
-        "content": f"Hello, this is a sample API response! You have called this endpoint {api_requests} times.",
-        "timestamp": datetime.now().isoformat(),
-    }
-    return jsonify(data)
+@app.route("/api/v1/<datatype>/<blockid>")
+def api_block_or_header(datatype, blockid):
+    """
+    This endpoint returns block or header data for the given blockid from the HSD node.
+    Allowed datatypes: 'block', 'header'
+    """
+    if datatype not in ["block", "header"]:
+        # Return a 404 error for invalid datatype
+        return jsonify({"error": "API endpoint not found"}), 400
+    try:
+        url = f"{HSD_URL()}/{datatype}/{blockid}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify({"error": f"Failed to get {datatype}", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
 
+@app.route("/api/v1/coin/<coinhash>/<index>")
+def api_coin(coinhash, index):
+    """
+    This endpoint returns information about a specific coin.
+    """
+    try:
+        url = f"{HSD_URL()}/coin/{coinhash}/{index}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify({"error": "Failed to get coin data", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/api/v1/coin/address/<address>")
+def api_coin_address(address):
+    """
+    This endpoint returns information about coins for a specific address.
+    """
+    try:
+        url = f"{HSD_URL()}/coin/address/{address}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify({"error": "Failed to get coins for address", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/api/v1/tx/<txid>")
+def api_transaction(txid):
+    """
+    This endpoint returns information about a specific transaction.
+    """
+    try:
+        url = f"{HSD_URL()}/tx/{txid}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify({"error": "Failed to get transaction data", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/api/v1/tx/address/<address>")
+def api_transaction_address(address):
+    """
+    This endpoint returns transactions for a specific address.
+    """
+    try:
+        url = f"{HSD_URL()}/tx/address/{address}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify({"error": "Failed to get transactions for address", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/v1/name/<name>")
+def api_name(name):
+    """
+    This endpoint returns information about a specific name.
+    """
+    try:
+        url = f"{HSD_URL()}/"
+        data = {
+            "method": "getnameinfo",
+            "params": [name]
+        }
+        response = requests.post(url, json=data)
+        if response.status_code == 200:
+            # Check if error is null
+            if 'error' in response.json() and response.json()['error'] is not None:
+                return jsonify({"error": response.json()['error']}), 400
+            
+            # Check if result is empty
+            if 'result' not in response.json() or not response.json()['result']:
+                return jsonify({"error": "Name not found"}), 404
+            return jsonify(response.json()['result']), 200
+        else:
+            return jsonify({"error": "Failed to get name data", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/v1/namehash/<namehash>")
+def api_namehash(namehash):
+    """
+    This endpoint returns information about a specific name.
+    """
+    try:
+        url = f"{HSD_URL()}/"
+        data = {
+            "method": "getnamebyhash",
+            "params": [namehash]
+        }
+        response = requests.post(url, json=data)
+        if response.status_code == 200:
+            # Check if error is null
+            if 'error' in response.json() and response.json()['error'] is not None:
+                return jsonify({"error": response.json()['error']}), 400
+            
+            # Check if result is empty
+            if 'result' not in response.json() or not response.json()['result']:
+                return jsonify({"error": "Name not found"}), 404
+            return jsonify(response.json()['result']), 200
+        else:
+            return jsonify({"error": "Failed to get name data", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/api/v1/nameresource/<name>")
+def api_nameresource(name):
+    """
+    This endpoint returns the resource for a specific name.
+    """
+    try:
+        url = f"{HSD_URL()}/"
+        data = {
+            "method": "getnameresource",
+            "params": [name]
+        }
+        response = requests.post(url, json=data)
+        if response.status_code == 200:
+            # Check if error is null
+            if 'error' in response.json() and response.json()['error'] is not None:
+                return jsonify({"error": response.json()['error']}), 400
+            
+            # Check if result is empty
+            if 'result' not in response.json() or not response.json()['result']:
+                return jsonify({"error": "Resource not found"}), 404
+            return jsonify(response.json()['result']), 200
+        else:
+            return jsonify({"error": "Failed to get name resource", "status_code": response.status_code}), response.status_code
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/v1/help")
+def api_help():
+    """
+    This endpoint returns a list of available API endpoints and their descriptions.
+    """
+    api_endpoints = [
+        {"endpoint": "/api/v1/status", "description": "Check HSD node status"},
+        {"endpoint": "/api/v1/chain", "description": "Get chain status"},
+        {"endpoint": "/api/v1/mempool", "description": "Get mempool status"},
+        {"endpoint": "/api/v1/block/<blockid>", "description": "Get block data by block height or hash"},
+        {"endpoint": "/api/v1/header/<blockid>", "description": "Get header data by block height or hash"},
+        {"endpoint": "/api/v1/coin/<coinhash>/<index>", "description": "Get coin info"},
+        {"endpoint": "/api/v1/coin/address/<address>", "description": "Get coins for address"},
+        {"endpoint": "/api/v1/tx/<txid>", "description": "Get transaction info"},
+        {"endpoint": "/api/v1/tx/address/<address>", "description": "Get transactions for address"},
+        {"endpoint": "/api/v1/name/<name>", "description": "Get name info"},
+        {"endpoint": "/api/v1/namehash/<namehash>", "description": "Get name by hash"},
+        {"endpoint": "/api/v1/nameresource/<name>", "description": "Get name resource"},
+        {"endpoint": "/api/v1/help", "description": "List all API endpoints"},
+    ]
+    return jsonify({"api": api_endpoints}), 200
+
+@app.route("/api/v1")
+@app.route("/api/v1/")
+@app.route("/api/v1/<catch_all>")
+def api_index(catch_all=None):
+    """
+    This endpoint returns a 404 error for any API endpoint that is not found.
+    """
+    return jsonify({"error": "API endpoint not found"}), 404
 
 # endregion
 
@@ -138,4 +370,4 @@ def not_found(e):
 
 # endregion
 if __name__ == "__main__":
-    app.run(debug=True, port=5000, host="0.0.0.0")
+    app.run(debug=True, port=5000, host="127.0.0.1")
