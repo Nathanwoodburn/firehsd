@@ -338,8 +338,9 @@ def api_namesummary(name):
             "blocksUntilExpire": None,
             "owner": None,
             "hash": None,
-            "state": None,
-            "resources" : []
+            "state": "CLOSED",
+            "resources" : [],
+            "error": None
         }
 
         url = f"{HSD_URL()}/"
@@ -360,28 +361,32 @@ def api_namesummary(name):
             return jsonify({"error": "Name summary not found"}), 404
         name_info = response.json()['result']
 
-        if 'info' in name_info:
-            summary["hash"] = name_info['info'].get('nameHash', None)
-            summary["state"] = name_info['info'].get('state', None)
+        if 'info' not in name_info or name_info['info'] is None:
+            summary["error"] = "Name info not found"
+            return jsonify(summary), 404
 
-            summary["value"] = name_info['info'].get('value', None)
-            # Convert from satoshis to HNS
-            if summary["value"] is not None:
-                summary["value"] = summary["value"] / 1000000
-            
-            if 'stats' in name_info['info']:
-                summary["blocksUntilExpire"] = name_info['info']['stats'].get('blocksUntilExpire', None)
-            
-            if 'owner' in name_info['info']:
-                owner_hash = name_info['info']['owner'].get('hash', None)
-                owner_index = name_info['info']['owner'].get('index', None)
-                if owner_hash is not None and owner_index is not None:
-                    # Fetch the owner address using the coin endpoint
-                    owner_response = requests.get(f"{HSD_URL()}/coin/{owner_hash}/{owner_index}")
-                    if owner_response.status_code == 200:
-                        owner_data = owner_response.json()
-                        summary["owner"] = owner_data.get('address', None)
+
+        summary["hash"] = name_info['info'].get('nameHash', None)
+        summary["state"] = name_info['info'].get('state', None)
+
+        summary["value"] = name_info['info'].get('value', None)
+        # Convert from satoshis to HNS
+        if summary["value"] is not None:
+            summary["value"] = summary["value"] / 1000000
         
+        if 'stats' in name_info['info']:
+            summary["blocksUntilExpire"] = name_info['info']['stats'].get('blocksUntilExpire', None)
+        
+        if 'owner' in name_info['info']:
+            owner_hash = name_info['info']['owner'].get('hash', None)
+            owner_index = name_info['info']['owner'].get('index', None)
+            if owner_hash is not None and owner_index is not None:
+                # Fetch the owner address using the coin endpoint
+                owner_response = requests.get(f"{HSD_URL()}/coin/{owner_hash}/{owner_index}")
+                if owner_response.status_code == 200:
+                    owner_data = owner_response.json()
+                    summary["owner"] = owner_data.get('address', None)
+    
         
         # Get resources
         data = {
@@ -392,11 +397,11 @@ def api_namesummary(name):
         if response.status_code == 200:
             # Check if error is null
             if 'error' in response.json() and response.json()['error'] is not None:
-                return jsonify({"error": response.json()['error']}), 400
+                return jsonify(summary), 200
             
             # Check if result is empty
             if 'result' not in response.json() or not response.json()['result']:
-                return jsonify({"error": "Name resources not found"}), 404
+                return jsonify(summary), 200
             
             resources = response.json()['result']
             if isinstance(resources, list):
