@@ -401,7 +401,6 @@ def api_namesummary(name):
         response = requests.get(f"{HSD_URL()}/header/{summary['height']}")
         if response.status_code == 200:
             block_header = response.json()
-            print(json.dumps(block_header, indent=4))
             if 'time' in block_header:
                 summary["mintTimestamp"] = block_header['time']
                 summary["mintDate"] = datetime.fromtimestamp(block_header['time'],tz=timezone.utc).isoformat()
