@@ -84,6 +84,11 @@
         &mdash; <a href="https://git.woodburn.au/nathanwoodburn/firehsd" style="color:#aaa;" target="_blank">Source</a>
     </footer>
     <script>
+        function getDemoUrl(endpoint) {
+            // Remove trailing placeholders like <name>, <blockid>, <txid>, etc.
+            return endpoint.replace(/\/<[^>]+>/g, '').replace("api","demo")
+        }
+
         function renderApiEndpoints(apiList) {
             const container = document.getElementById('api-endpoints');
             // Create table element
@@ -103,8 +108,14 @@
             thDescription.style.padding = '8px';
             thDescription.style.borderBottom = '1px solid #ccc';
             thDescription.textContent = 'Description';
+            const thEndpointDemo = document.createElement('th');
+            thEndpointDemo.style.padding = '8px';
+            thEndpointDemo.style.borderBottom = '1px solid #ccc';
+            thEndpointDemo.textContent = 'Example Usage';
+
             headerRow.appendChild(thEndpoint);
             headerRow.appendChild(thDescription);
+            headerRow.appendChild(thEndpointDemo);
             thead.appendChild(headerRow);
             table.appendChild(thead);
 
@@ -124,8 +135,20 @@
                 tdDescription.style.borderBottom = '1px solid #eee';
                 tdDescription.textContent = api.description;
 
+                const tdEndpointDemo = document.createElement('td');
+                tdEndpointDemo.style.padding = '8px';
+                tdEndpointDemo.style.borderBottom = '1px solid #eee';
+                const demoLink = document.createElement('a');
+                demoLink.href = getDemoUrl(api.endpoint);
+                demoLink.textContent = 'Try it';
+                demoLink.target = '_blank';
+                demoLink.classList.add('btn', 'btn-secondary', 'btn-sm');
+                tdEndpointDemo.appendChild(demoLink);
+
                 row.appendChild(tdEndpoint);
                 row.appendChild(tdDescription);
+                row.appendChild(tdEndpointDemo);
+
                 tbody.appendChild(row);
             });
             table.appendChild(tbody);

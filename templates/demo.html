@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire HSD | Nathan.Woodburn</title>
+    <link rel="icon" href="/assets/img/favicon.png" type="image/png">
+    <link rel="stylesheet" href="/assets/css/index.css">
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <style>
+        /* Extra styling for index page */
+        .intro {
+            max-width: 600px;
+            margin: 0 auto 2em auto;
+            padding: 1.5em;
+            background: rgba(40, 40, 40, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1.15em;
+            line-height: 1.7;
+        }
+
+        .api-table-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        footer {
+            margin-top: 4em;
+            text-align: center;
+            color: #aaa;
+            font-size: 0.95em;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1em;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-light">
+    <div class="centre" style="margin-top: 2em;">
+        <img src="/assets/img/favicon.png" alt="Fire HSD Logo" class="logo">
+        <h1>Fire HSD</h1>
+        <span style="font-size:1.2em; color:#f0f0f0;">A free public API for Handshake (HSD)</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="demo-endpoint">
+        <!-- Card with demo URL and example output -->
+         <h2 style="text-align: center;">Example API request</h2>
+        <div class="card text-bg-secondary mb-3" style="width: fit-content; max-width: 90%; margin: 0 auto;">
+            <div class="card-header">{{url}}</div>
+            <div class="card-body">
+                <pre class="card-text" id="output"></pre>
+            </div>
+        </div>
+    </div>
+        
+    <script>
+        // Fetch the demo URL and display it
+        fetch('{{url}}')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error fetching demo URL:', error);
+            });
+    </script>
+                
+    
+
+
+
+    <div style="text-align: center; margin-top: 2em;">
+
+        <h1>Support Fire HSD</h1>
+        If you'd like to help keep the service running and growing,
+        consider
+        donating:<br />
+        <div class="btn-group-vertical btn-group-sm gap-1" role="group"><a class="btn btn-primary" role="button"
+                target="_blank" href="https://paypal.me/nathanwoodburn">PayPal</a><a class="btn btn-primary"
+                role="button" target="_blank" href="https://donate.stripe.com/8wM6pv0VD08Xe408ww">Card (via
+                Stripe)</a><a class="btn btn-primary" role="button" target="_blank"
+                href="https://nathan.woodburn.au/donate?c=hns">HNS</a><a class="btn btn-primary" role="button"
+                target="_blank" href="https://nathan.woodburn.au/donate?c=btc">BTC</a><a class="btn btn-primary"
+                role="button" target="_blank" href="https://nathan.woodburn.au/donate">Other Donation Options</a></div>
+        </p>
+    </div>
+
+    <footer>
+        &copy; 2025 <a href="https://nathan.woodburn.au" style="color: #aaa;" target="_blank">Nathan.Woodburn/</a>
+        &mdash; <a href="https://git.woodburn.au/nathanwoodburn/firehsd" style="color:#aaa;" target="_blank">Source</a>
+    </footer>
+    <script>
+        
+    </script>
+</body>
+
+</html>

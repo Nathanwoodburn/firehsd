@@ -23,7 +23,6 @@ HSD_PORT = os.getenv("HSD_PORT", "12037")
 HSD_API_KEY = os.getenv("HSD_API_KEY", "y5cSK42tgVCdt4E58jkHjI3nQ9GU32bC")
 
 
-
 app = Flask(__name__)
 
 
@@ -31,7 +30,7 @@ def find(name, path):
     for root, dirs, files in os.walk(path):
         if name in files:
             return os.path.join(root, name)
-        
+
 
 def HSD_URL():
     """
@@ -42,6 +41,8 @@ def HSD_URL():
     return f"http://x:{HSD_API_KEY}@{HSD_HOST}:{HSD_PORT}"
 
 # Assets routes
+
+
 @app.route("/assets/<path:path>")
 def send_assets(path):
     if path.endswith(".json"):
@@ -134,7 +135,8 @@ def api_status():
             return jsonify({"error": "HSD is not running"}), 503
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
-    
+
+
 @app.route("/api/v1/chain")
 def api_chain():
     """
@@ -153,12 +155,13 @@ def api_chain():
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app.route("/api/v1/mempool")
 def mempool():
     """
     This endpoint returns the current mempool status from the HSD node.
     """
-    
+
     try:
         url = f"{HSD_URL()}/mempool"
         response = requests.get(url)
@@ -168,6 +171,7 @@ def mempool():
             return jsonify({"error": "Command failed", "status_code": response.status_code}), response.status_code
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/v1/<datatype>/<blockid>")
 def api_block_or_header(datatype, blockid):
@@ -188,6 +192,7 @@ def api_block_or_header(datatype, blockid):
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app.route("/api/v1/coin/<coinhash>/<index>")
 def api_coin(coinhash, index):
     """
@@ -202,7 +207,8 @@ def api_coin(coinhash, index):
             return jsonify({"error": "Failed to get coin data", "status_code": response.status_code}), response.status_code
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
-    
+
+
 @app.route("/api/v1/coin/address/<address>")
 def api_coin_address(address):
     """
@@ -217,7 +223,8 @@ def api_coin_address(address):
             return jsonify({"error": "Failed to get coins for address", "status_code": response.status_code}), response.status_code
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
-    
+
+
 @app.route("/api/v1/tx/<txid>")
 def api_transaction(txid):
     """
@@ -232,7 +239,8 @@ def api_transaction(txid):
             return jsonify({"error": "Failed to get transaction data", "status_code": response.status_code}), response.status_code
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
-    
+
+
 @app.route("/api/v1/tx/address/<address>")
 def api_transaction_address(address):
     """
@@ -247,6 +255,7 @@ def api_transaction_address(address):
             return jsonify({"error": "Failed to get transactions for address", "status_code": response.status_code}), response.status_code
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/v1/name/<name>")
 def api_name(name):
@@ -264,7 +273,7 @@ def api_name(name):
             # Check if error is null
             if 'error' in response.json() and response.json()['error'] is not None:
                 return jsonify({"error": response.json()['error']}), 400
-            
+
             # Check if result is empty
             if 'result' not in response.json() or not response.json()['result']:
                 return jsonify({"error": "Name not found"}), 404
@@ -273,6 +282,7 @@ def api_name(name):
             return jsonify({"error": "Failed to get name data", "status_code": response.status_code}), response.status_code
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/v1/namehash/<namehash>")
 def api_namehash(namehash):
@@ -287,19 +297,13 @@ def api_namehash(namehash):
         }
         response = requests.post(url, json=data)
         if response.status_code == 200:
-            # Check if error is null
-            if 'error' in response.json() and response.json()['error'] is not None:
-                return jsonify({"error": response.json()['error']}), 400
-            
-            # Check if result is empty
-            if 'result' not in response.json() or not response.json()['result']:
-                return jsonify({"error": "Name not found"}), 404
-            return jsonify(response.json()['result']), 200
+            return jsonify(response.json()), 200
         else:
             return jsonify({"error": "Failed to get name data", "status_code": response.status_code}), response.status_code
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
-    
+
+
 @app.route("/api/v1/nameresource/<name>")
 def api_nameresource(name):
     """
@@ -316,7 +320,7 @@ def api_nameresource(name):
             # Check if error is null
             if 'error' in response.json() and response.json()['error'] is not None:
                 return jsonify({"error": response.json()['error']}), 400
-            
+
             # Check if result is empty
             if 'result' not in response.json() or not response.json()['result']:
                 return jsonify({"error": "Resource not found"}), 404
@@ -325,6 +329,7 @@ def api_nameresource(name):
             return jsonify({"error": "Failed to get name resource", "status_code": response.status_code}), response.status_code
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/v1/namesummary/<name>")
 def api_namesummary(name):
@@ -340,7 +345,7 @@ def api_namesummary(name):
             "owner": None,
             "hash": None,
             "state": "CLOSED",
-            "resources" : [],
+            "resources": [],
             "error": None
         }
 
@@ -352,11 +357,11 @@ def api_namesummary(name):
         response = requests.post(url, json=data)
         if response.status_code != 200:
             return jsonify({"error": "Failed to get name summary", "status_code": response.status_code}), response.status_code
-        
+
         # Check if error is null
         if 'error' in response.json() and response.json()['error'] is not None:
             return jsonify({"error": response.json()['error']}), 400
-        
+
         # Check if result is empty
         if 'result' not in response.json() or not response.json()['result']:
             return jsonify({"error": "Name summary not found"}), 404
@@ -374,21 +379,22 @@ def api_namesummary(name):
         # Convert from satoshis to HNS
         if summary["value"] is not None:
             summary["value"] = summary["value"] / 1000000
-        
+
         if 'stats' in name_info['info']:
-            summary["blocksUntilExpire"] = name_info['info']['stats'].get('blocksUntilExpire', None)
-        
+            summary["blocksUntilExpire"] = name_info['info']['stats'].get(
+                'blocksUntilExpire', None)
+
         if 'owner' in name_info['info']:
             owner_hash = name_info['info']['owner'].get('hash', None)
             owner_index = name_info['info']['owner'].get('index', None)
             if owner_hash is not None and owner_index is not None:
                 # Fetch the owner address using the coin endpoint
-                owner_response = requests.get(f"{HSD_URL()}/coin/{owner_hash}/{owner_index}")
+                owner_response = requests.get(
+                    f"{HSD_URL()}/coin/{owner_hash}/{owner_index}")
                 if owner_response.status_code == 200:
                     owner_data = owner_response.json()
                     summary["owner"] = owner_data.get('address', None)
-    
-        
+
         # Get resources
         data = {
             "method": "getnameresource",
@@ -399,22 +405,22 @@ def api_namesummary(name):
             # Check if error is null
             if 'error' in response.json() and response.json()['error'] is not None:
                 return jsonify(summary), 200
-            
+
             # Check if result is empty
             if 'result' not in response.json() or not response.json()['result']:
                 return jsonify(summary), 200
-            
+
             resources = response.json()['result']
             if isinstance(resources, list):
                 summary["resources"] = resources
             else:
                 summary["resources"].append(resources)
-                
-        return jsonify(summary), 200
 
+        return jsonify(summary), 200
 
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/v1/help")
 def api_help():
@@ -425,19 +431,29 @@ def api_help():
         {"endpoint": "/api/v1/status", "description": "Check HSD node status"},
         {"endpoint": "/api/v1/chain", "description": "Get chain status"},
         {"endpoint": "/api/v1/mempool", "description": "Get mempool status"},
-        {"endpoint": "/api/v1/block/<blockid>", "description": "Get block data by block height or hash"},
-        {"endpoint": "/api/v1/header/<blockid>", "description": "Get header data by block height or hash"},
-        {"endpoint": "/api/v1/coin/<coinhash>/<index>", "description": "Get coin info"},
-        {"endpoint": "/api/v1/coin/address/<address>", "description": "Get coins for address"},
+        {"endpoint": "/api/v1/block/<blockid>",
+            "description": "Get block data by block height or hash"},
+        {"endpoint": "/api/v1/header/<blockid>",
+            "description": "Get header data by block height or hash"},
+        {"endpoint": "/api/v1/coin/<coinhash>/<index>",
+            "description": "Get coin info"},
+        {"endpoint": "/api/v1/coin/address/<address>",
+            "description": "Get coins for address"},
         {"endpoint": "/api/v1/tx/<txid>", "description": "Get transaction info"},
-        {"endpoint": "/api/v1/tx/address/<address>", "description": "Get transactions for address"},
+        {"endpoint": "/api/v1/tx/address/<address>",
+            "description": "Get transactions for address"},
         {"endpoint": "/api/v1/name/<name>", "description": "Get name info"},
-        {"endpoint": "/api/v1/namehash/<namehash>", "description": "Get name by hash"},
-        {"endpoint": "/api/v1/nameresource/<name>", "description": "Get name resource"},
+        {"endpoint": "/api/v1/namehash/<namehash>",
+            "description": "Get name by hash"},
+        {"endpoint": "/api/v1/nameresource/<name>",
+            "description": "Get name resource"},
+        {"endpoint": "/api/v1/namesummary/<name>",
+         "description": "Get a summary of a name"},
         {"endpoint": "/api/v1/help", "description": "List all API endpoints"},
-        {"endpoint": "/api/v1/namesummary/<name>", "description": "Get a summary of a name"},
+
     ]
     return jsonify({"api": api_endpoints}), 200
+
 
 @app.route("/api/v1")
 @app.route("/api/v1/")
@@ -447,6 +463,37 @@ def api_index(catch_all=None):
     This endpoint returns a 404 error for any API endpoint that is not found.
     """
     return jsonify({"error": "API endpoint not found"}), 404
+
+# endregion
+
+
+# region Demo routes
+
+demo_data = {
+    "status": "/api/v1/status",
+    "chain": "/api/v1/chain",
+    "mempool": "/api/v1/mempool",
+    "block": "/api/v1/block/210241",
+    "header": "/api/v1/header/210241",
+    "coin": "/api/v1/coin/e6fc6b6759761cfa310c8260de11aacd88481795b4794e1231b0434825763ec8/10",
+    "coin/address": "/api/v1/coin/address/hs1qz3fnjn70fs7rdxt57fhrl4yzsqngg55sqyz83a",
+    "tx": "/api/v1/tx/e6fc6b6759761cfa310c8260de11aacd88481795b4794e1231b0434825763ec8",
+    "tx/address": "/api/v1/tx/address/hs1qz3fnjn70fs7rdxt57fhrl4yzsqngg55sqyz83a",
+    "name": "/api/v1/name/woodburn",
+    "namehash": "/api/v1/namehash/368d90d6a3cf9fa3a588d0e4c15d2d265896d2c0bf514644f2e9c86df2f00350",
+    "nameresource": "/api/v1/nameresource/woodburn",
+    "namesummary": "/api/v1/namesummary/woodburn",
+    "help": "/api/v1/help"
+}
+
+
+@app.route("/demo/v1/<path:api_name>")
+def demo(api_name):
+    demo_url = demo_data.get(api_name, None)
+    if not demo_url:
+        return render_template("404.html"), 404
+    return render_template("demo.html", url=demo_url)
+
 
 # endregion
 
@@ -467,6 +514,7 @@ def add_cors_headers(response):
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
     return response
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000, host="127.0.0.1")
