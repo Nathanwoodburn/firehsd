@@ -7,6 +7,7 @@
     <title>Fire HSD | Nathan.Woodburn</title>
     <link rel="icon" href="/assets/img/favicon.png" type="image/png">
     <link rel="stylesheet" href="/assets/css/index.css">
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
     <style>
         /* Extra styling for index page */
         .intro {
@@ -42,9 +43,8 @@
     </style>
 </head>
 
-<body>
-    <div class="spacer"></div>
-    <div class="centre">
+<body class="bg-dark text-light">
+    <div class="centre" style="margin-top: 2em;">
         <img src="/assets/img/favicon.png" alt="Fire HSD Logo" class="logo">
         <h1>Fire HSD</h1>
         <span style="font-size:1.2em; color:#f0f0f0;">A free public API for Handshake (HSD)</span>
@@ -63,9 +63,25 @@
         <h2>API Endpoints</h2>
         <div id="api-endpoints"></div>
     </div>
-    <div class="spacer"></div>
+    <div style="text-align: center; margin-top: 2em;">
+
+        <h1>Support Fire HSD</h1>
+        If you'd like to help keep the service running and growing,
+        consider
+        donating:<br />
+        <div class="btn-group-vertical btn-group-sm gap-1" role="group"><a class="btn btn-primary" role="button"
+                target="_blank" href="https://paypal.me/nathanwoodburn">PayPal</a><a class="btn btn-primary"
+                role="button" target="_blank" href="https://donate.stripe.com/8wM6pv0VD08Xe408ww">Card (via
+                Stripe)</a><a class="btn btn-primary" role="button" target="_blank"
+                href="https://nathan.woodburn.au/donate?c=hns">HNS</a><a class="btn btn-primary" role="button"
+                target="_blank" href="https://nathan.woodburn.au/donate?c=btc">BTC</a><a class="btn btn-primary"
+                role="button" target="_blank" href="https://nathan.woodburn.au/donate">Other Donation Options</a></div>
+        </p>
+    </div>
+
     <footer>
-        &copy; 2025 Nathan Woodburn &mdash; <a href="https://git.woodburn.au/nathanwoodburn/firehsd" style="color:#aaa;">Source</a>
+        &copy; 2025 Nathan Woodburn &mdash; <a href="https://git.woodburn.au/nathanwoodburn/firehsd"
+            style="color:#aaa;">Source</a>
     </footer>
     <script>
         function renderApiEndpoints(apiList) {
