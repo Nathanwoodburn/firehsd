@@ -22,8 +22,41 @@
         }
 
         .api-table-container {
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        /* Responsive table styling */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1rem;
+        }
+
+        /* Table styling */
+        .api-table {
+            width: 100%;
             max-width: 800px;
             margin: 0 auto;
+            border-collapse: collapse;
+        }
+
+        .api-table th,
+        .api-table td {
+            padding: 8px;
+            border-bottom: 1px solid #444;
+        }
+
+        @media (max-width: 768px) {
+            .api-table th,
+            .api-table td {
+                padding: 6px 4px;
+                font-size: 0.9em;
+            }
+
+            code {
+                word-break: break-word;
+            }
         }
 
         footer {
@@ -91,26 +124,26 @@
 
         function renderApiEndpoints(apiList) {
             const container = document.getElementById('api-endpoints');
+
+            // Create responsive wrapper
+            const tableWrapper = document.createElement('div');
+            tableWrapper.className = 'table-responsive';
+
             // Create table element
             const table = document.createElement('table');
-            table.style.margin = 'auto';
-            table.style.borderCollapse = 'collapse';
-            table.style.width = '100%';
+            table.className = 'api-table';
 
             // Create table header
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
+
             const thEndpoint = document.createElement('th');
-            thEndpoint.style.padding = '8px';
-            thEndpoint.style.borderBottom = '1px solid #ccc';
             thEndpoint.textContent = 'Endpoint';
+
             const thDescription = document.createElement('th');
-            thDescription.style.padding = '8px';
-            thDescription.style.borderBottom = '1px solid #ccc';
             thDescription.textContent = 'Description';
+
             const thEndpointDemo = document.createElement('th');
-            thEndpointDemo.style.padding = '8px';
-            thEndpointDemo.style.borderBottom = '1px solid #ccc';
             thEndpointDemo.textContent = 'Example Usage';
 
             headerRow.appendChild(thEndpoint);
@@ -123,21 +156,16 @@
             const tbody = document.createElement('tbody');
             apiList.forEach(api => {
                 const row = document.createElement('tr');
+
                 const tdEndpoint = document.createElement('td');
-                tdEndpoint.style.padding = '8px';
-                tdEndpoint.style.borderBottom = '1px solid #eee';
                 const code = document.createElement('code');
                 code.textContent = api.endpoint;
                 tdEndpoint.appendChild(code);
 
                 const tdDescription = document.createElement('td');
-                tdDescription.style.padding = '8px';
-                tdDescription.style.borderBottom = '1px solid #eee';
                 tdDescription.textContent = api.description;
 
                 const tdEndpointDemo = document.createElement('td');
-                tdEndpointDemo.style.padding = '8px';
-                tdEndpointDemo.style.borderBottom = '1px solid #eee';
                 const demoLink = document.createElement('a');
                 demoLink.href = getDemoUrl(api.endpoint);
                 demoLink.textContent = 'Try it';
@@ -153,9 +181,10 @@
             });
             table.appendChild(tbody);
 
-            // Replace container content
+            // Add table to wrapper and wrapper to container
+            tableWrapper.appendChild(table);
             container.innerHTML = '';
-            container.appendChild(table);
+            container.appendChild(tableWrapper);
         }
 
         fetch('/api/v1/help')
