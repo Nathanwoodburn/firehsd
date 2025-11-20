@@ -130,7 +130,16 @@ def api_status():
     try:
         response = requests.get(HSD_URL())
         if response.status_code == 200:
-            return jsonify({"status": "HSD is running"}), 200
+            data = response.json()
+            return jsonify(
+                {
+                    "status": "HSD is running",
+                    "version": data.get("version", "unknown"),
+                    "progress": data.get("chain", {}).get("progress", 0),
+                    "inbound": data.get("pool", {}).get("inbound", 0),
+                    "outbound": data.get("pool", {}).get("outbound", 0),
+                    "agent": data.get("pool", {}).get("agent", "unknown"),
+                }), 200
         else:
             return jsonify({"error": "HSD is not running"}), 503
     except requests.RequestException as e:
